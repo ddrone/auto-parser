@@ -1,10 +1,10 @@
 module AutoPrinter where
 
-import GHC.Generics
+import Data.Proxy (Proxy(..))
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy.Builder (Builder, toLazyText, fromString, singleton)
+import GHC.Generics
 import GHC.TypeLits (KnownSymbol, symbolVal)
-import Data.Proxy (Proxy(..))
 
 class ShowBuilder a where
   build :: a -> Builder

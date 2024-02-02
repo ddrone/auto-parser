@@ -15,8 +15,9 @@ data Tree a
 instance ShowBuilder a => ShowBuilder (Tree a) where
 
 test :: Tree Int
-test = Node Leaf 1 Leaf
+test = Node (Node Leaf 0 Leaf) 1 (Node (Node Leaf 2 Leaf) 3 Leaf)
 
 main :: IO ()
 main = do
-  TextIO.putStr (showText test)
+  TextIO.putStrLn (showText (10 :: Int))
+  TextIO.putStrLn (showText test)

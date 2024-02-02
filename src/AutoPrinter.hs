@@ -2,7 +2,9 @@ module AutoPrinter where
 
 import GHC.Generics
 import Data.Text.Lazy (Text)
-import Data.Text.Lazy.Builder (Builder, toLazyText, fromString)
+import Data.Text.Lazy.Builder (Builder, toLazyText, fromString, singleton)
+import GHC.TypeLits (KnownSymbol, symbolVal)
+import Data.Proxy (Proxy(..))
 
 class ShowBuilder a where
   build :: a -> Builder
@@ -24,7 +26,16 @@ instance ShowBuilder1 U1 where
 instance ShowBuilder c => ShowBuilder1 (K1 i c) where
   build1 (K1 x) = build x
 
-instance ShowBuilder1 f => ShowBuilder1 (M1 i c f) where
+constructorName :: KnownSymbol s => M1 i (MetaCons s fi b) f a -> String
+constructorName (_ :: M1 i (MetaCons s fi b) f a) = symbolVal (Proxy :: Proxy s)
+
+instance (KnownSymbol s, ShowBuilder1 f) => ShowBuilder1 (M1 i (MetaCons s fi b) f) where
+  build1 y@(M1 x) = fromString (constructorName y) <> singleton ' ' <> build1 x
+
+instance ShowBuilder1 f => ShowBuilder1 (M1 i (MetaData s1 s2 b1 b2) f) where
+  build1 (M1 x) = build1 x
+
+instance ShowBuilder1 f => ShowBuilder1 (M1 i (MetaSel ms su ss ds) f) where
   build1 (M1 x) = build1 x
 
 instance (ShowBuilder1 f, ShowBuilder1 g) => ShowBuilder1 (f :+: g) where

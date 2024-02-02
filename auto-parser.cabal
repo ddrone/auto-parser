@@ -18,10 +18,13 @@ common common
         megaparsec,
         text
     default-extensions:
+        DataKinds,
         DefaultSignatures,
         FlexibleContexts,
-        TypeOperators,
-        KindSignatures
+        FlexibleInstances,
+        KindSignatures,
+        ScopedTypeVariables,
+        TypeOperators
 
 library
     import:           common

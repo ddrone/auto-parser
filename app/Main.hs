@@ -24,7 +24,6 @@ instance ShowBuilder a => ShowBuilder (RoseTree a) where
 
 main :: IO ()
 main = do
-  print (from test)
   print test
   TextIO.putStrLn (showText test)
   print rose

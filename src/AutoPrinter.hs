@@ -41,7 +41,7 @@ constructorName :: KnownSymbol s => M1 i (MetaCons s fi b) f a -> String
 constructorName (_ :: M1 i (MetaCons s fi b) f a) = symbolVal (Proxy :: Proxy s)
 
 instance (KnownSymbol s, ShowBuilder1 f) => ShowBuilder1 (M1 i (MetaCons s fi b) f) where
-  build1 b con y@(M1 x) = build1 True (Just (constructorName y)) x
+  build1 b con y@(M1 x) = build1 b (Just (constructorName y)) x
 
 instance ShowBuilder1 f => ShowBuilder1 (M1 i (MetaData s1 s2 b1 b2) f) where
   build1 b con (M1 x) = build1 b con x
@@ -56,6 +56,6 @@ instance (ShowBuilder1 f, ShowBuilder1 g) => ShowBuilder1 (f :+: g) where
 instance (ShowBuilder1 f, ShowBuilder1 g) => ShowBuilder1 (f :*: g) where
   build1 b con (x :*: y) = case con of
     Nothing -> build1 b Nothing x <> singleton ' ' <> build1 b Nothing y
-    Just n -> wrap (fromString n <> singleton ' ' <> build1 b Nothing x <> singleton ' ' <> build1 b Nothing y)
+    Just n -> wrap (fromString n <> singleton ' ' <> build1 True Nothing x <> singleton ' ' <> build1 True Nothing y)
     where
       wrap builder = if b then singleton '(' <> builder <> singleton ')' else builder

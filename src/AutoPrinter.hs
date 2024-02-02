@@ -25,7 +25,7 @@ instance ShowBuilder1 U1 where
   build1 _ = mempty
 
 instance ShowBuilder1 (K1 i c) where
-  build1 _ =  mempty
+  build1 _ = mempty
 
 instance ShowBuilder1 f => ShowBuilder1 (M1 i c f) where
   build1 _ = mempty

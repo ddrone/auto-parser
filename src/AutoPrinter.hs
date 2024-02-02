@@ -18,9 +18,6 @@ instance ShowBuilder Int where
 showText :: ShowBuilder a => a -> Text
 showText = toLazyText . build
 
-instance ShowBuilder1 V1 where
-  build1 _ = mempty
-
 instance ShowBuilder1 U1 where
   build1 _ = mempty
 

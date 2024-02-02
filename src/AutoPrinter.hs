@@ -17,6 +17,15 @@ class ShowBuilder1 f where
 instance ShowBuilder Int where
   build = fromString . show
 
+instance ShowBuilder a => ShowBuilder [a] where
+  build ls = case ls of
+    [] -> fromString "[]"
+    [x] -> singleton '[' <> build x <> singleton ']'
+    x : rest -> singleton '[' <> go x rest
+    where
+      go x [] = build x <> singleton ']'
+      go x (y : rest) = build x <> fromString ", " <> go y rest
+
 showText :: ShowBuilder a => a -> Text
 showText = toLazyText . build
 

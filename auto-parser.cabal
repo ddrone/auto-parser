@@ -19,7 +19,8 @@ common common
         text
     default-extensions:
         DefaultSignatures,
-        FlexibleContexts
+        FlexibleContexts,
+        TypeOperators
 
 library
     import:           common

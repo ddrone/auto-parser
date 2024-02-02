@@ -1,17 +1,22 @@
 module Main where
 
--- import AutoPrinter
+import AutoPrinter
 import GHC.Generics (Generic)
+import qualified Data.Text.Lazy.IO as TextIO
 
 data Tree a
-  = Node a [Tree a]
+  = Leaf
+  | Node (Tree a) a (Tree a)
   deriving (Generic)
 
--- instance ShowBuilder a => ShowBuilder (Tree a) where
+-- data RoseTree a = Rose a [RoseTree a]
+-- Would need to figure out how to handle "default cases" too
+
+instance ShowBuilder a => ShowBuilder (Tree a) where
 
 test :: Tree Int
-test = Node 1 [Node 2 [], Node 3 [Node 4 []], Node 5 []]
+test = Node Leaf 1 Leaf
 
 main :: IO ()
 main = do
-  putStrLn "Hello, Haskell!"
+  TextIO.putStr (showText test)

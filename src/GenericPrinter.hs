@@ -35,6 +35,9 @@ test1 = Bin (Atom "2") add (Bin (Atom "2") mul (Atom "2"))
 test2 = Bin (Atom "2") add (Bin (Atom "2") add (Atom "2"))
 test3 = Bin (Bin (Atom "2") add (Atom "2")) add (Atom "2")
 test4 = Bin (Atom "2") mul (Bin (Atom "2") add (Atom "2"))
+test5 = Bin (Bin (Atom "f") apply (Atom "x")) mul (Atom "4")
+test6 = Bin (Bin (Atom "f") apply (Atom "x")) apply (Atom "y")
+test7 = Bin (Atom "f") apply (Bin (Atom "g") apply (Atom "x"))
 
 -- Taking a parent operator and whether the current child is left or right,
 -- prettily print the expression with minimal amount of brackets

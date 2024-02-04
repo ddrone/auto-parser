@@ -1,10 +1,20 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 module GenericPrinter where
 
+import Control.Applicative ((<|>))
+import Control.Monad.Combinators.Expr (Operator(..), makeExprParser)
+import Data.List (sortBy, groupBy)
+import Data.Ord (comparing, Down (..))
 import Data.Text (Text)
 import Data.Text.Lazy.Builder (Builder, fromText, singleton, toLazyText)
+import Data.Void (Void)
+import Text.Megaparsec (Parsec)
+import Text.Megaparsec.Char (string)
+import Text.Megaparsec.Char.Lexer (decimal)
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as LazyText
+
+type Parser = Parsec Void Text
 
 -- This module isn't really necessary for the generic printer itself, but is more of a condensed version
 -- of the actual pretty-printing algorithm stripped of all the extra details, so that I would be able
@@ -61,3 +71,24 @@ printExpr path expr = case expr of
 
 printToplevel :: Expr -> Text
 printToplevel = LazyText.toStrict . toLazyText . printExpr Nothing
+
+sortOperators :: [Op] -> [[Op]]
+sortOperators = groupBy (\x y -> opPriority x == opPriority y) . sortBy (comparing (Down . opPriority))
+
+makeParser :: [Op] -> Parser Expr
+makeParser knownOps = result
+  where
+    atom = Atom . Text.pack . show <$> (decimal :: Parser Int)
+
+    opParser op = f ((`Bin` op) <$ string (opText op))
+      where
+        f = case opAssoc op of
+          AssocLeft -> InfixL
+          AssocRight -> InfixR
+
+    table = map (map opParser) (sortOperators knownOps)
+
+    parens p = string "(" *> p <* string ")"
+
+    term = parens result <|> atom
+    result = makeExprParser term table

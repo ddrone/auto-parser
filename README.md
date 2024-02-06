@@ -6,7 +6,8 @@ Potential solution: re-implement parsing the same format as `deriving Read` usin
 
 ## Tasks
 
-* [ ] Make AutoPrinter and AutoParser work for record types
+* [x] Make AutoPrinter work for record types
+* [ ] Make AutoParser work for record types
 * [ ] Make AutoPrinter and AutoParser work in presence of infix data constructors
 
 ## Notes

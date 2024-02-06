@@ -3,6 +3,7 @@ module Playground where
 import GHC.Generics (Generic, from)
 
 import AutoPrinter
+import AutoParser (TextParser)
 
 data Tree a
   = Leaf
@@ -14,6 +15,8 @@ data RoseTree a = Rose a [RoseTree a]
 
 instance ShowBuilder a => ShowBuilder (Tree a) where
 instance ShowBuilder a => ShowBuilder (RoseTree a) where
+instance TextParser a => TextParser (Tree a) where
+instance TextParser a => TextParser (RoseTree a) where
 
 test :: Tree Int
 test = Node (Node Leaf 0 Leaf) 1 (Node (Node Leaf 2 Leaf) 3 Leaf)

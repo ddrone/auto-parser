@@ -6,7 +6,7 @@ import Data.Text (Text)
 import Data.Void (Void)
 import GHC.Generics
 import GHC.TypeLits (KnownSymbol, symbolVal)
-import Text.Megaparsec (Parsec)
+import Text.Megaparsec (Parsec, sepBy1)
 import Text.Megaparsec.Char (space1)
 import qualified Data.Text as Text
 import qualified Text.Megaparsec.Char.Lexer as Lexer
@@ -32,6 +32,12 @@ class TextParser1 f where
 
 instance TextParser Int where
   parse = space *> Lexer.decimal
+
+instance TextParser a => TextParser [a] where
+  parse = symbol "[" *> sepBy1 parse (symbol ",") <* symbol "]"
+
+instance TextParser1 U1 where
+  parse1 = pure U1
 
 instance TextParser c => TextParser1 (K1 i c) where
   parse1 = K1 <$> inner

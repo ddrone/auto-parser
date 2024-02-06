@@ -31,7 +31,7 @@ class TextParser1 f where
   parse1 :: Parser (f p)
 
 instance TextParser Int where
-  parse = space *> Lexer.decimal
+  parse = Lexer.decimal <* space
 
 instance TextParser a => TextParser [a] where
   parse = symbol "[" *> sepBy1 parse (symbol ",") <* symbol "]"

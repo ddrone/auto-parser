@@ -15,6 +15,12 @@ class ShowBuilder a where
 class ShowBuilder1 f where
   build1 :: Bool -> f p -> Builder
   -- We're only using those to distunguish between U1 and products inside constructors
+  -- The point of doing that is to figure out whether the brackets should be displayed
+  -- when printing out the constructor name. Currently, a lot of the implementations of
+  -- isProduct1/isProduct might not actually make sense, but at least it works.
+  -- It would be nice to figure out the proper invariant and carefully maintain it, but
+  -- doing this style of hasochistic programming is painful and I don't want to think
+  -- about it more that absolutely necessary.
   isProduct1 :: Proxy (f p) -> Bool
 
 instance ShowBuilder Int where

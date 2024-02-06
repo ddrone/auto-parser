@@ -38,5 +38,6 @@ rose = Rose 1 [Rose 2 [], Rose 3 [Rose 4 [], Rose 5 []], Rose 6 []]
 foo :: Foo
 foo = Foo 1 2 [3, 4, 5]
 
+-- Surprisingly, one does not need brackets around records in this case
 foo2 :: Foo2
 foo2 = Foo2 Foo { bar = 1, baz = 2, quux = [] } Foo { bar = 3, baz = 4, quux = [5, 6] }

@@ -7,55 +7,74 @@ import GHC.Generics
 import GHC.TypeLits (KnownSymbol, symbolVal)
 
 class ShowBuilder a where
-  build :: Bool -> Maybe String -> a -> Builder
-  default build :: (Generic a, ShowBuilder1 (Rep a)) => Bool -> Maybe String -> a -> Builder
-  build b con = build1 b con . from
+  build :: Bool -> a -> Builder
+  default build :: (Generic a, ShowBuilder1 (Rep a)) => Bool -> a -> Builder
+  build b = build1 b . from
+  isProduct :: Proxy a -> Bool
 
 class ShowBuilder1 f where
-  build1 :: Bool -> Maybe String -> f p -> Builder
+  build1 :: Bool -> f p -> Builder
+  -- We're only using those to distunguish between U1 and products inside constructors
+  isProduct1 :: Proxy (f p) -> Bool
 
 instance ShowBuilder Int where
-  build _ _ = fromString . show
+  build _ = fromString . show
+  isProduct _ = False
 
 instance ShowBuilder a => ShowBuilder [a] where
   -- TODO: do I need to do the wrapping here as well? For something like
   -- data T = T [String]
-  build _ _ ls = case ls of
+  build _ ls = case ls of
     [] -> fromString "[]"
-    [x] -> singleton '[' <> build False Nothing x <> singleton ']'
+    [x] -> singleton '[' <> build False x <> singleton ']'
     x : rest -> singleton '[' <> go x rest
     where
-      go x [] = build False Nothing x <> singleton ']'
-      go x (y : rest) = build False Nothing x <> fromString ", " <> go y rest
+      go x [] = build False x <> singleton ']'
+      go x (y : rest) = build False x <> fromString ", " <> go y rest
+  isProduct _ = False
 
 showText :: ShowBuilder a => a -> Text
-showText = toLazyText . build False Nothing
+showText = toLazyText . build False
 
 instance ShowBuilder1 U1 where
-  build1 _ con _ = maybe mempty fromString con
+  build1 _ _ = mempty
+  isProduct1 _ = False
 
 instance ShowBuilder c => ShowBuilder1 (K1 i c) where
-  build1 m con (K1 x) = build m con x
+  build1 _ (K1 x) = build True x
+  isProduct1 _ = isProduct (Proxy :: Proxy c)
 
 constructorName :: KnownSymbol s => M1 i (MetaCons s fi b) f a -> String
 constructorName (_ :: M1 i (MetaCons s fi b) f a) = symbolVal (Proxy :: Proxy s)
 
-instance (KnownSymbol s, ShowBuilder1 f) => ShowBuilder1 (M1 i (MetaCons s fi b) f) where
-  build1 b con y@(M1 x) = build1 b (Just (constructorName y)) x
+instance (KnownSymbol s, ShowBuilder1 f) => ShowBuilder1 (M1 i (MetaCons s fi False) f) where
+  build1 b y@(M1 x) =
+    if prod
+      then wrap (fromString (constructorName y ++ " ") <> build1 b x)
+      else fromString (constructorName y)
+    where
+      prod = isProduct1 (Proxy :: Proxy (f a))
+      wrap builder = if b && prod then singleton '(' <> builder <> singleton ')' else builder
+  isProduct1 _ = isProduct1 (Proxy :: Proxy (f a))
+
+instance (KnownSymbol s, ShowBuilder1 f) => ShowBuilder1 (M1 i (MetaCons s fi True) f) where
+  build1 b y@(M1 x) =
+    fromString (constructorName y) <> fromString " {" <> build1 b x <> fromString "}"
+  isProduct1 _ = isProduct1 (Proxy :: Proxy (f a))
 
 instance ShowBuilder1 f => ShowBuilder1 (M1 i (MetaData s1 s2 b1 b2) f) where
-  build1 b con (M1 x) = build1 b con x
+  build1 b (M1 x) = build1 b x
+  isProduct1 _ = isProduct1 (Proxy :: Proxy (f a))
 
 instance ShowBuilder1 f => ShowBuilder1 (M1 i (MetaSel ms su ss ds) f) where
-  build1 b con (M1 x) = build1 b con x
+  build1 b (M1 x) = build1 b x
+  isProduct1 _ = isProduct1 (Proxy :: Proxy (f a))
 
 instance (ShowBuilder1 f, ShowBuilder1 g) => ShowBuilder1 (f :+: g) where
-  build1 b con (L1 x) = build1 b con x
-  build1 b con (R1 x) = build1 b con x
+  build1 b (L1 x) = build1 b x
+  build1 b (R1 x) = build1 b x
+  isProduct1 _ = isProduct1 (Proxy :: Proxy (f a)) || isProduct1 (Proxy :: Proxy (g a))
 
 instance (ShowBuilder1 f, ShowBuilder1 g) => ShowBuilder1 (f :*: g) where
-  build1 b con (x :*: y) = case con of
-    Nothing -> build1 b Nothing x <> singleton ' ' <> build1 b Nothing y
-    Just n -> wrap (fromString n <> singleton ' ' <> build1 True Nothing x <> singleton ' ' <> build1 True Nothing y)
-    where
-      wrap builder = if b then singleton '(' <> builder <> singleton ')' else builder
+  build1 b (x :*: y) = build1 b x <> singleton ' ' <> build1 b y
+  isProduct1 _ = True

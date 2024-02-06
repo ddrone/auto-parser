@@ -28,6 +28,7 @@ instance ShowBuilder a => ShowBuilder (RoseTree a) where
 instance TextParser a => TextParser (Tree a) where
 instance TextParser a => TextParser (RoseTree a) where
 instance ShowBuilder Foo
+instance ShowBuilder Foo2
 
 test :: Tree Int
 test = Node (Node Leaf 0 Leaf) 1 (Node (Node Leaf 2 Leaf) 3 Leaf)
